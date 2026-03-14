@@ -5,7 +5,6 @@ from livekit.agents import RunContext, function_tool
 
 @function_tool()
 async def delivery_dropoff(
-    self,
     context: RunContext,
     courier_company: str,
 ) -> dict[str, Any]:

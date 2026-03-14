@@ -35,7 +35,7 @@ class Assistant(Agent):
                                 "Right this way"
 
                             Do not guess, always use the tool.
-
+                            Be brief and polite.
                             Your responses are concise, to the point, and without any complex formatting or punctuation including emojis, asterisks, or other symbols.
                             You are curious, friendly, and have a sense of humor.""",
             tools=reception_skills(),

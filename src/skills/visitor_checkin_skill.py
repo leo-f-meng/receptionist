@@ -220,12 +220,11 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                         text=f"""
                             Thanks {visitor}.
                             I'm having trouble confirming {host}'s availability.
-                            Let me try to contact them.
+                            Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
                     """
                         # TODO: Implement host contact logic here, e.g. send a message or page to the host
                     )
 
-                self.complete(self.state)
         # No appointment time provided, so just check host status as normal
         else:
             await self.session.say(
@@ -268,10 +267,12 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                     text=f"""
                         Thanks {visitor}.
                         I'm having trouble confirming {host}'s availability.
-                        Let me try to contact them.
+                        Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
                 """
                     # TODO: Implement host contact logic here, e.g. send a message or page to the host
                 )
+
+        self.complete(self.state)
 
     async def check_host_status(self):
 

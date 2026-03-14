@@ -9,12 +9,14 @@ async def get_directions(
     destination: str,
 ) -> dict[str, Any]:
     """
-    Use this tool when visitors ask where something is located.
+    When visitors ask where something is located, provide them with directions.
+    Visitor is alway on  the ground floor lobby when they ask for directions, so provide directions accordingly.
 
     Important rules:
     - The receptionist is a virtual assistant and cannot physically guide visitors.
     - Do NOT say things like "follow me" or "this way".
     - Only provide concise factual information.
+    - Visitor is on the ground floor lobby when they ask for directions. Provide directions accordingly.
 
     If a visitor asks for taking them there, give verbal directions instead.
 
