@@ -1,29 +1,80 @@
 from typing import Any
+from enum import Enum
+import httpx
 
 from livekit.agents import RunContext, function_tool
+
+
+class TempUnit(str, Enum):
+    celsius = "celsius"
+    fahrenheit = "fahrenheit"
 
 
 @function_tool()
 async def lookup_weather(
     context: RunContext,
     location: str,
-    unit: str = "celsius",
+    unit: TempUnit = TempUnit.celsius,
 ) -> dict[str, Any]:
     """
-    Look up weather information for a given location.
+    Look up real weather information for a location.
+
     Args:
-        location: The location to look up the weather for.
-        unit: The unit for temperature, either "celsius" or "fahrenheit". Default is "celsius".
+        location: City name (example: London)
+        unit: Temperature unit ("celsius" or "fahrenheit")
     """
-    return weather_tool(location, unit)
+
+    return await weather_tool(location, unit)
 
 
-def weather_tool(
+async def weather_tool(
     location: str,
-    unit: str = "celsius",
+    unit: TempUnit = TempUnit.celsius,
 ) -> dict[str, Any]:
 
-    if unit == "fahrenheit":
-        return {"weather": "sunny", "temperature_f": 70}
-    else:
-        return {"weather": "sunny", "temperature_c": 20}
+    async with httpx.AsyncClient() as client:
+
+        # Convert city → coordinates
+        geo_url = "https://geocoding-api.open-meteo.com/v1/search"
+
+        geo_resp = await client.get(
+            geo_url,
+            params={"name": location, "count": 1},
+        )
+
+        geo_data = geo_resp.json()
+
+        if not geo_data.get("results"):
+            return {"error": f"Could not find location {location}"}
+
+        lat = geo_data["results"][0]["latitude"]
+        lon = geo_data["results"][0]["longitude"]
+
+        # Get weather
+        weather_url = "https://api.open-meteo.com/v1/forecast"
+
+        weather_resp = await client.get(
+            weather_url,
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "current_weather": True,
+            },
+        )
+
+        weather_data = weather_resp.json()
+        temp_c = weather_data["current_weather"]["temperature"]
+
+        if unit == TempUnit.fahrenheit:
+            temp = temp_c * 9 / 5 + 32
+            return {
+                "location": location,
+                "weather": "current conditions",
+                "temperature_f": round(temp, 1),
+            }
+
+        return {
+            "location": location,
+            "weather": "current conditions",
+            "temperature_c": temp_c,
+        }

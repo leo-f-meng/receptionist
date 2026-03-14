@@ -153,7 +153,9 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
     async def unrelated_query(self, context: RunContext):
         """When user asks any unrelated questions or requests any other services not in your job description,
         run tool calling to generate the answer"""
-        await self.session.generate_reply(instructions="Sure — Let me see.")
+        await self.session.generate_reply(
+            instructions="Go back to the agent instructions and answer the user's question based on the information collected so far."
+        )
         self.complete(self.state)
 
     async def handle_host_status(self):
@@ -173,7 +175,7 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                 await self.session.say(
                     text=f"""
                     Thanks {visitor}. But you're a bit early for your appointment with {host} at {self.state.appointment_time}.
-                    I'll let {host} know you've arrived, but you might want to wait a bit before heading up.
+                    I'll let {host} know you've arrived, but you might want to wait a bit before heading up.Please take a seat and wait for a moment.
                     """
                 )
             # Visitor arrives more than 1 hour after appointment
@@ -181,9 +183,10 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                 await self.session.say(
                     text=f"""
                     Thanks {visitor}. But you're a bit late for your appointment with {host} at {self.state.appointment_time}.
-                    I'll let {host} know you've arrived, but you might want to give them a call.
+                    I'll let {host} know you've arrived, but you might want to give them a call. Please take a seat and wait for a moment.
                     """
                 )
+
             # Visitor arrives within 1 hour of appointment. Check host status as normal.
             else:
                 if status == "available":
@@ -211,7 +214,7 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                         text=f"""
                             Thanks {visitor}.
                             It looks like {host} isn't at their desk right now.
-                            I'll try to reach them for you.
+                            I'll try to reach them for you. Please take a seat and wait for a moment.
                         """
                     )
 
@@ -230,47 +233,10 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
             await self.session.say(
                 text=f"""
                 Thanks {visitor}.
-                I'll check if {host} is available to see you.
+                I'll check if {host} is available to see you. Please take a seat and wait for a moment. I'll let them call you if they are available.
+                If you don't hear back in a few minutes, please come back to the reception desk for assistance.
                 """
             )
-            if status == "available":
-                await self.session.say(
-                    text=f"""
-                    Thanks {visitor}.
-                    {host} is available.
-                    I'll let them know you've arrived.
-                    Please take a seat.
-                """
-                )
-
-            elif status == "busy":
-                await self.session.say(
-                    text=f"""
-                        Thanks {visitor}.
-                        {host} is currently in a meeting.
-                        I'll let them know you're here.
-                        Please take a seat.
-                    """
-                )
-
-            elif status == "away":
-                await self.session.say(
-                    text=f"""
-                        Thanks {visitor}.
-                        It looks like {host} isn't at their desk right now.
-                        I'll try to reach them for you.
-                    """
-                )
-
-            else:
-                await self.session.say(
-                    text=f"""
-                        Thanks {visitor}.
-                        I'm having trouble confirming {host}'s availability.
-                        Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
-                """
-                    # TODO: Implement host contact logic here, e.g. send a message or page to the host
-                )
 
         self.complete(self.state)
 
@@ -280,7 +246,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
             "Adam": "away",
             "Dave": "available",
             "John": "busy",
-            "Emily": None,
         }
 
         if self.state.host_name is not None:
