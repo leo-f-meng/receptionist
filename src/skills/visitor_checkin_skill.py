@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 
-from dateutil import parser
 from livekit.agents import AgentTask, RunContext, function_tool
 
 
@@ -164,69 +162,45 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
         status = self.state.host_status
 
         # check the time now and compare with appointment time if available, and adjust the message accordingly
-        if self.state.has_appointment and self.state.appointment_time:
-            time_now = datetime.now()
-            appointment_time = parser.parse(
-                self.state.appointment_time, default=time_now
-            )
-
-            # Visitor arrives more than 1 hour before appointment
-            if time_now < appointment_time - timedelta(hours=1):
+        if self.state.has_appointment:
+            if status == "available":
                 await self.session.say(
                     text=f"""
-                    Thanks {visitor}. But you're a bit early for your appointment with {host} at {self.state.appointment_time}.
-                    I'll let {host} know you've arrived, but you might want to wait a bit before heading up.Please take a seat and wait for a moment.
-                    """
-                )
-            # Visitor arrives more than 1 hour after appointment
-            elif time_now > appointment_time + timedelta(hours=1):
-                await self.session.say(
-                    text=f"""
-                    Thanks {visitor}. But you're a bit late for your appointment with {host} at {self.state.appointment_time}.
-                    I'll let {host} know you've arrived, but you might want to give them a call. Please take a seat and wait for a moment.
-                    """
+                    Thanks {visitor}.
+                    {host} is available.
+                    I'll let them know you've arrived.
+                    Please take a seat.
+                """
                 )
 
-            # Visitor arrives within 1 hour of appointment. Check host status as normal.
-            else:
-                if status == "available":
-                    await self.session.say(
-                        text=f"""
+            elif status == "busy":
+                await self.session.say(
+                    text=f"""
                         Thanks {visitor}.
-                        {host} is available.
-                        I'll let them know you've arrived.
+                        {host} is currently in a meeting.
+                        I'll let them know you're here.
                         Please take a seat.
                     """
-                    )
+                )
 
-                elif status == "busy":
-                    await self.session.say(
-                        text=f"""
-                            Thanks {visitor}.
-                            {host} is currently in a meeting.
-                            I'll let them know you're here.
-                            Please take a seat.
-                        """
-                    )
-
-                elif status == "away":
-                    await self.session.say(
-                        text=f"""
-                            Thanks {visitor}.
-                            It looks like {host} isn't at their desk right now.
-                            I'll try to reach them for you. Please take a seat and wait for a moment.
-                        """
-                    )
-
-                else:
-                    await self.session.say(
-                        text=f"""
-                            Thanks {visitor}.
-                            I'm having trouble confirming {host}'s availability.
-                            Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
+            elif status == "away":
+                await self.session.say(
+                    text=f"""
+                        Thanks {visitor}.
+                        It looks like {host} isn't at their desk right now.
+                        I'll try to reach them for you. Please take a seat and wait for a moment.
                     """
-                        # TODO: Implement host contact logic here, e.g. send a message or page to the host
-                    )
+                )
+
+            else:
+                await self.session.say(
+                    text=f"""
+                        Thanks {visitor}.
+                        I'm having trouble confirming {host}'s availability.
+                        Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
+                """
+                    # TODO: Implement host contact logic here, e.g. send a message or page to the host
+                )
 
         # No appointment time provided, so just check host status as normal
         else:
