@@ -202,7 +202,7 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                     # TODO: Implement host contact logic here, e.g. send a message or page to the host
                 )
 
-        # No appointment time provided, so just check host status as normal
+        # No appointment time provided
         else:
             await self.session.say(
                 text=f"""
