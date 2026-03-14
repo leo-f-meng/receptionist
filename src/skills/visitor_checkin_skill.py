@@ -161,7 +161,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
         host = self.state.host_name
         status = self.state.host_status
 
-        # check the time now and compare with appointment time if available, and adjust the message accordingly
         if self.state.has_appointment:
             if status == "available":
                 await self.session.say(
@@ -172,7 +171,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                     Please take a seat.
                 """
                 )
-
             elif status == "busy":
                 await self.session.say(
                     text=f"""
@@ -182,7 +180,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                         Please take a seat.
                     """
                 )
-
             elif status == "away":
                 await self.session.say(
                     text=f"""
@@ -191,7 +188,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                         I'll try to reach them for you. Please take a seat and wait for a moment.
                     """
                 )
-
             else:
                 await self.session.say(
                     text=f"""
@@ -199,7 +195,6 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                         I'm having trouble confirming {host}'s availability.
                         Let me try to contact them. Please take a seat and wait for a moment. I'll let them know you've arrived.
                 """
-                    # TODO: Implement host contact logic here, e.g. send a message or page to the host
                 )
 
         # No appointment time provided
@@ -212,10 +207,11 @@ class VisitorCheckinTask(AgentTask[VisitorCheckinState]):
                 """
             )
 
+        # TODO: Implement host contact logic here, e.g. send a message or page to the host
         self.complete(self.state)
 
     async def check_host_status(self):
-
+        # This is a mock-up. In a real implementation, you would query a calendar system, employee directory, or other data source to get the host's current status.
         role_availability_mock_up = {
             "Adam": "away",
             "Dave": "available",
