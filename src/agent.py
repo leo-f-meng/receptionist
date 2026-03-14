@@ -32,7 +32,6 @@ class Assistant(Agent):
                                 "Let me check that"
                                 "One moment"
                                 "Of course"
-                                "Right this way"
 
                             Do not guess, always use the tool.
                             Be brief and polite.
