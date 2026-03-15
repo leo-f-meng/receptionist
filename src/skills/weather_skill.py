@@ -18,6 +18,7 @@ async def lookup_weather(
 ) -> dict[str, Any]:
     """
     Look up real weather information for a location.
+    The default unit is Celsius, but Fahrenheit can be used by setting unit="fahrenheit".
 
     Args:
         location: City name (example: London)
